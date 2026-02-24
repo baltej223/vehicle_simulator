@@ -115,7 +115,7 @@ class Vehicle{
     this->distance_completed = distance;
     
     if (name == "default") {
-        this->name = "Vehicle " + totalCars;
+        this->name = "Vehicle " + std::to_string(totalCars);
     } else {
       this->name = name;
     }
@@ -146,18 +146,14 @@ class Vehicle{
   
 
     // std::cout << "Time required for covering the precision_distance for the car is : "<< time_covering_precision_distance;
-      
+      double delta_time = 0.5;
+      // double time_covering_precision_distance = (double) this->road->precision_distance /  (double)  speed;
     for (int i : road->road_vector){
-      // I specifically put this in the loop, so that when I change the speed, then the time waiting for the car also changes.
-
-      double time_covering_precision_distance = (double) this->road->precision_distance /  (double)  speed;
-      
+      // I specifically put this in the loop, so that when I change the speed, then the time waiting for the car also changes
           observeAndDrive();
-          // std::cout << i << "\n";
-          this->distance_completed += speed * time_covering_precision_distance;
-          std::cout << "["+this->name+"] " << "Distance Completed:" << distance_completed << std::endl;
+          distance_completed += speed * delta_time;          std::cout << "["+this->name+"] " << "Distance Completed:" << distance_completed << std::endl;
           std::cout << "Speed: " << speed << std::endl;
-          std::this_thread::sleep_for(std::chrono::duration<double>(time_covering_precision_distance)); 
+          std::this_thread::sleep_for(std::chrono::duration<double>(delta_time)); 
     }
       return distance_completed;
   }
@@ -166,6 +162,7 @@ class Vehicle{
       // Here comes the actual algorithem;
     std::vector<std::pair<int, int>> distances;
     for (Vehicle *other_car : road->onRoadVehicals ) {
+      if (other_car == this) continue;
       int distance_diff = other_car->distance_completed - this->distance_completed; // -ve means behind, and +ve means ahead 
       int lane_diff = other_car->current_lane - this->current_lane; // to the left: +ve | to the right: -ve
       std::pair<int, int> p = {distance_diff, lane_diff};
@@ -182,7 +179,7 @@ class Vehicle{
     int minDistance = INFINITY;
     for (int i = 0 ; i < distances.size(); i++) {
       std::pair<int, int> distance = distances[i];
-      if (!(distance.second == this->current_lane)) {
+      if (!(this->road->onRoadVehicals[i]->current_lane == this->current_lane)) {
         continue;
       }
       if (distance.second < minDistance) {
